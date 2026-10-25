@@ -1,59 +1,107 @@
 package com.example.notification;
 
 import com.example.notification.model.Notification;
+import com.example.notification.service.NotificationService;
 
-/**
- * Main application entry point.
- *
- * Demonstrates Module 1: Classes and Objects in action.
- */
+import java.util.List;
+import java.util.Scanner;
+
 public class Main {
-
     public static void main(String[] args) {
-        System.out.println("==================================================");
-        System.out.println(" Java OOP & SOLID By Example: Module 1");
-        System.out.println(" Topic: Classes, Objects, Fields, Methods & new");
-        System.out.println("==================================================\n");
+        NotificationService service = new NotificationService();
+        Scanner scanner = new Scanner(System.in);
 
-        // 1. Instantiating objects using the 'new' keyword and a parameterized constructor
-        System.out.println("--- 1. Creating Objects with 'new' and Parameterized Constructor ---");
-        Notification emailNotification = new Notification(
-                "student@example.com",
-                "Welcome to Java OOP and SOLID course!",
-                "EMAIL"
-        );
+        System.out.println("=== Notification Management System ===");
 
-        Notification smsNotification = new Notification(
-                "+1-555-0199",
-                "Your verification code is 849201",
-                "SMS"
-        );
+        while (true) {
+            System.out.println("\nSelect an option:");
+            System.out.println("1. Send Notification");
+            System.out.println("2. View Notification History");
+            System.out.println("3. Exit");
+            System.out.print("Enter choice (1-3): ");
 
-        // 2. Invoking instance methods (Behavior)
-        System.out.println("\n--- 2. Invoking Instance Methods (Behavior) ---");
-        emailNotification.send();
-        smsNotification.send();
+            if (!scanner.hasNextLine()) {
+                break;
+            }
 
-        // 3. Demonstrating that objects maintain independent state in heap memory
-        System.out.println("\n--- 3. Verifying Independent Object State ---");
-        System.out.println("Email Object State: " + emailNotification.getDetails());
-        System.out.println("SMS Object State:   " + smsNotification.getDetails());
+            String choice = scanner.nextLine().trim();
 
-        // 4. Using the default constructor and setting fields directly
-        System.out.println("\n--- 4. Creating an Object with Default Constructor ---");
-        Notification whatsAppNotification = new Notification();
-        whatsAppNotification.recipient = "+1-555-0144";
-        whatsAppNotification.message = "Hey! Your order has been delivered.";
-        whatsAppNotification.channel = "WHATSAPP";
+            switch (choice) {
+                case "1":
+                    handleSendNotification(service, scanner);
+                    break;
+                case "2":
+                    handleViewHistory(service);
+                    break;
+                case "3":
+                    System.out.println("Exiting application.");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter 1, 2, or 3.");
+            }
+        }
+    }
 
-        whatsAppNotification.send();
-        System.out.println("WhatsApp Object State: " + whatsAppNotification.getDetails());
+    private static void handleSendNotification(NotificationService service, Scanner scanner) {
+        System.out.println("\nSelect Channel:");
+        System.out.println("1. Email");
+        System.out.println("2. SMS");
+        System.out.println("3. WhatsApp");
+        System.out.print("Enter channel (1-3): ");
 
-        System.out.println("\n==================================================");
-        System.out.println(" Notice how 'whatsAppNotification' fields were modified");
-        System.out.println(" directly from outside the class. In Module 2, we will");
-        System.out.println(" see why direct field access is risky and how Encapsulation");
-        System.out.println(" protects our data with validation and controlled access.");
-        System.out.println("==================================================");
+        if (!scanner.hasNextLine()) {
+            return;
+        }
+
+        String channelChoice = scanner.nextLine().trim();
+        String channel;
+        switch (channelChoice) {
+            case "1":
+                channel = "EMAIL";
+                break;
+            case "2":
+                channel = "SMS";
+                break;
+            case "3":
+                channel = "WHATSAPP";
+                break;
+            default:
+                System.out.println("Invalid channel choice.");
+                return;
+        }
+
+        System.out.print("Enter recipient: ");
+        if (!scanner.hasNextLine()) {
+            return;
+        }
+        String recipient = scanner.nextLine().trim();
+
+        System.out.print("Enter message: ");
+        if (!scanner.hasNextLine()) {
+            return;
+        }
+        String message = scanner.nextLine().trim();
+
+        System.out.println("\nSending notification...");
+        Notification result = service.send(channel, recipient, message);
+
+        if (result.isSuccessful()) {
+            System.out.println("Result: SUCCESS");
+        } else {
+            System.out.println("Result: FAILED - " + result.getFailureReason());
+        }
+    }
+
+    private static void handleViewHistory(NotificationService service) {
+        System.out.println("\n--- Notification History ---");
+        List<Notification> history = service.getHistory();
+        if (history.isEmpty()) {
+            System.out.println("No notifications recorded yet.");
+            return;
+        }
+
+        for (int i = 0; i < history.size(); i++) {
+            System.out.printf("%d. %s%n", i + 1, history.get(i));
+        }
     }
 }
